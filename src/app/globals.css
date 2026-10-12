@@ -1,0 +1,201 @@
+@import "tailwindcss";
+
+/*
+ * Aventra Billing — global design tokens.
+ *
+ * Single source of truth for semantic colors and typography.
+ * The application UI is dark; the invoice document palette (`doc-*`)
+ * is a separate light A4 surface consumed only by document components.
+ */
+:root {
+  /* Application background and foreground */
+  --background: #0b0b0c;
+  --foreground: #f3f1ef;
+
+  /* Surfaces */
+  --surface: #111214;
+  --surface-alt: #1a1b1d;
+  --surface-card: var(--surface);
+  --surface-elevated: var(--surface-alt);
+
+  /* Text */
+  --text-primary: #f3f1ef;
+  --text-secondary: #a3a1a0;
+  --text-muted: #747476;
+
+  /* Borders, separators, and inputs */
+  --border: #26272a;
+  --separator: var(--border);
+  --input: var(--surface-alt);
+
+  /* Actions */
+  --primary: #8b5c3f;
+  --primary-light: #a67c58;
+  --primary-dark: #5a3b26;
+  --primary-foreground: #f8f5f1;
+
+  --secondary: var(--surface-alt);
+  --secondary-foreground: var(--text-primary);
+
+  /* Focus and selection */
+  --focus: var(--primary-light);
+  --selection: var(--primary-dark);
+
+  /* Status */
+  --success: #2e7d59;
+  --warning: #b8893c;
+  --danger: #a8553c;
+  --info: #3b82f6;
+  --status-foreground: #f8f5f1;
+
+  /* Invoice document (light A4 — keep separate from dark UI tokens) */
+  --doc-paper: #ffffff;
+  --doc-ink: #211a13;
+  --doc-muted: #6f665c;
+  --doc-faint: #a79c8e;
+  --doc-line: #e3d9cb;
+  --doc-band: #f6efe3;
+  --doc-card: #faf6ee;
+  --doc-header: #221610;
+  --doc-header-text: #ffffff;
+  --doc-accent: #8b5c3f;
+  --doc-total-band: #f4ead9;
+
+  /* 404 Not Found metallic and atmospheric illumination tokens */
+  --notfound-glow-core: #c49a72;
+  --notfound-glow-halo: #8b5c3f;
+  --notfound-glow-ambient: #4a2f1c;
+  --notfound-metal-highlight: #d4a97f;
+  --notfound-metal-light: #a67c58;
+  --notfound-metal-base: #73492e;
+  --notfound-metal-dark: #442817;
+  --notfound-metal-deep: #25160d;
+
+  /* Typography */
+  --font-body: var(--font-lato);
+  --font-heading-family: var(--font-montserrat);
+  --font-signature-family: var(--font-caveat);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-surface: var(--surface);
+  --color-surface-alt: var(--surface-alt);
+  --color-surface-card: var(--surface-card);
+  --color-surface-elevated: var(--surface-elevated);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+
+  --color-border: var(--border);
+  --color-separator: var(--separator);
+  --color-input: var(--input);
+
+  --color-primary: var(--primary);
+  --color-primary-light: var(--primary-light);
+  --color-primary-dark: var(--primary-dark);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-focus: var(--focus);
+  --color-selection: var(--selection);
+
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-info: var(--info);
+  --color-status-foreground: var(--status-foreground);
+
+  --color-doc-paper: var(--doc-paper);
+  --color-doc-ink: var(--doc-ink);
+  --color-doc-muted: var(--doc-muted);
+  --color-doc-faint: var(--doc-faint);
+  --color-doc-line: var(--doc-line);
+  --color-doc-band: var(--doc-band);
+  --color-doc-card: var(--doc-card);
+  --color-doc-header: var(--doc-header);
+  --color-doc-header-text: var(--doc-header-text);
+  --color-doc-accent: var(--doc-accent);
+  --color-doc-total-band: var(--doc-total-band);
+
+  --color-notfound-glow-core: var(--notfound-glow-core);
+  --color-notfound-glow-halo: var(--notfound-glow-halo);
+  --color-notfound-glow-ambient: var(--notfound-glow-ambient);
+  --color-notfound-metal-highlight: var(--notfound-metal-highlight);
+  --color-notfound-metal-light: var(--notfound-metal-light);
+  --color-notfound-metal-base: var(--notfound-metal-base);
+  --color-notfound-metal-dark: var(--notfound-metal-dark);
+  --color-notfound-metal-deep: var(--notfound-metal-deep);
+
+  --font-sans: var(--font-body);
+  --font-heading: var(--font-heading-family);
+  --font-signature: var(--font-signature-family);
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body);
+}
+
+::selection {
+  background: var(--selection);
+  color: var(--primary-foreground);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/*
+ * Text-entry controls signal focus through their own border token
+ * (see shared Input/Textarea) instead of the global halo. Buttons, links,
+ * selects, and checkboxes keep the halo above.
+ */
+input:where(:not([type="checkbox"], [type="radio"])):focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[role="combobox"]:focus-visible {
+  outline: none;
+}
+
+/*
+ * Global Aventra dark minimal scrollbar theme.
+ * Firefox uses standard scrollbar-width & scrollbar-color.
+ * WebKit browsers use the ::-webkit-scrollbar pseudo-elements.
+ */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) var(--background);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border-radius: 4px;
+  border: 2px solid var(--background);
+  transition: background-color 0.15s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--primary-light);
+}
+
