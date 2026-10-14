@@ -23,6 +23,7 @@ describe("GSTIN validation", () => {
     expect(isValidGstin("22AAAAA0000A1Z5")).toBe(true);
     expect(isValidGstin("27ABCDE1234F1Z5")).toBe(true);
     expect(isValidGstin("29AAAAA0000A1Z5")).toBe(true);
+    expect(isValidGstin("27NGPI00837E1D7")).toBe(true);
   });
 
   it("rejects shorter and longer values", () => {
@@ -63,6 +64,7 @@ describe("PAN extraction from GSTIN", () => {
     expect(derivePanFromGstin("22ABCDE1234F1Z5")).toBe("ABCDE1234F");
     expect(derivePanFromGstin("27ABCDE1234F1Z5")).toBe("ABCDE1234F");
     expect(derivePanFromGstin("29AAAAA0000A1Z5")).toBe("AAAAA0000A");
+    expect(derivePanFromGstin("27NGPI00837E1D7")).toBe("NGPI00837E");
   });
 
   it("extracts from normalized input", () => {

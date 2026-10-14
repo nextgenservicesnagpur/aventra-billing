@@ -1,17 +1,14 @@
 import type { ReactNode } from "react";
-import { DashboardLayout } from "@/features/dashboard/presentation/page/DashboardLayout";
 
 export type DashboardRouteLayoutProps = {
   children: ReactNode;
 };
 
 /**
- * Dashboard route layout. Thin composition boundary: the shell (header +
- * content region) lives in the Dashboard feature. Access remains gated by
- * the (app) session layout above this segment.
+ * Dashboard route layout. Access and the persistent shared header shell
+ * are owned by the parent (app) layout.
  */
 const DashboardRouteLayout = ({ children }: DashboardRouteLayoutProps) => (
-  <DashboardLayout>{children}</DashboardLayout>
+  <>{children}</>
 );
-
 export default DashboardRouteLayout;

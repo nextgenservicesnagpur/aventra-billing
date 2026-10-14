@@ -12,7 +12,7 @@ export type OrganizationErrorProps = {
  * visual language: no stack traces, with a retry action.
  */
 const OrganizationError = ({ reset }: OrganizationErrorProps) => (
-  <main className="flex min-h-dvh w-full flex-col items-center justify-center bg-background px-6 text-center text-foreground">
+  <div className="flex w-full min-h-[50dvh] flex-col items-center justify-center text-center text-foreground">
     <h1 className="font-heading text-2xl font-bold text-text-primary">
       Something went wrong
     </h1>
@@ -24,7 +24,6 @@ const OrganizationError = ({ reset }: OrganizationErrorProps) => (
         Try again
       </Button>
     </div>
-  </main>
+  </div>
 );
-
 export default OrganizationError;

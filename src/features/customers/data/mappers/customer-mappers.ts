@@ -1,0 +1,31 @@
+import type { Customer } from "../../domain/entities/customer";
+import type { CustomerDto } from "../dto/customer-dto";
+
+export const toCustomerDto = (customer: Customer): CustomerDto => ({
+  id: customer.id,
+  organizationId: customer.organizationId,
+  name: customer.name,
+  customerType: customer.customerType,
+  gstTreatment: customer.gstTreatment,
+  status: customer.status,
+  contactPerson: customer.contactPerson ?? null,
+  email: customer.email ?? null,
+  phone: customer.phone ?? null,
+  alternatePhone: customer.alternatePhone ?? null,
+  billingAddress: customer.billingAddress,
+  shippingAddress: customer.shippingAddress,
+  sameAsBillingAddress: customer.sameAsBillingAddress,
+  gstin: customer.gstin ?? null,
+  pan: customer.pan ?? null,
+  currency: customer.currency,
+  placeOfSupply: customer.placeOfSupply,
+  paymentTerms: customer.paymentTerms,
+  creditLimit: customer.creditLimit ?? null,
+  defaultDiscount: customer.defaultDiscount ?? null,
+  defaultTaxPreference: customer.defaultTaxPreference,
+  priceList: customer.priceList,
+  internalNotes: customer.internalNotes ?? null,
+  tags: customer.tags,
+  createdAt: customer.createdAt.toISOString(),
+  updatedAt: customer.updatedAt.toISOString(),
+});

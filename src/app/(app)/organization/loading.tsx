@@ -3,9 +3,8 @@
  * loads; replaced by real content as the feature grows.
  */
 const OrganizationLoading = () => (
-  <main className="flex min-h-dvh w-full flex-col items-center justify-center bg-background px-6 text-center text-foreground">
+  <div className="flex w-full items-center justify-center py-24 text-center text-foreground">
     <p className="text-sm text-text-muted">Loading organization…</p>
-  </main>
+  </div>
 );
-
 export default OrganizationLoading;
