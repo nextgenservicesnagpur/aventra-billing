@@ -6,11 +6,15 @@
  * functions; no layer re-implements the format or extraction rules.
  */
 
-/** State code (2) + PAN (10) + entity number (1) + "Z" + checksum (1). */
-const GSTIN_PATTERN = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
+/** State code (2) + PAN/TAN (10) + entity number (1) + type/reserved (1) + checksum (1). */
+const GSTIN_PATTERN =
+  /^[0-9]{2}(?:[A-Z]{5}[0-9]{4}[A-Z]|[A-Z]{4}[0-9]{5}[A-Z])[1-9A-Z][0-9A-Z]{2}$/;
 
-/** Five letters, four digits, one letter. */
+/** Five letters, four digits, one letter (PAN). */
 const PAN_PATTERN = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+
+/** Four letters, five digits, one letter (TAN). */
+const TAN_PATTERN = /^[A-Z]{4}[0-9]{5}[A-Z]$/;
 
 /** Characters 3–12 (1-based) of the GSTIN. */
 const PAN_FROM_GSTIN_START = 2;
@@ -31,9 +35,10 @@ export const normalizePan = (input: string): string =>
 export const isValidGstin = (value: string): boolean =>
   value.length === GSTIN_LENGTH && GSTIN_PATTERN.test(value);
 
-/** Structural PAN check against the exact 10-character format. */
+/** Structural PAN/TAN check against the exact 10-character format. */
 export const isValidPan = (value: string): boolean =>
-  value.length === PAN_LENGTH && PAN_PATTERN.test(value);
+  value.length === PAN_LENGTH &&
+  (PAN_PATTERN.test(value) || TAN_PATTERN.test(value));
 
 /**
  * Derives the PAN embedded in a GSTIN. Returns null for anything that is

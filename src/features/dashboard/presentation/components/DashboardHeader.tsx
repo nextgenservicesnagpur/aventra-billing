@@ -5,6 +5,7 @@ import { getDashboardHeaderContext } from "../../data/queries/header-context";
 import { toDashboardHeaderModel } from "../view-models/dashboardHeader";
 import { DashboardSearch } from "./DashboardSearch";
 import { NotificationButton } from "./NotificationButton";
+import { MegaMenu } from "./MegaMenu";
 import { UserMenu } from "./UserMenu";
 import { WorkspaceContext } from "./WorkspaceContext";
 import {
@@ -50,6 +51,9 @@ export const DashboardHeader = async () => {
         <div className="ml-auto flex shrink-0 items-center gap-1 md:gap-2">
           <DashboardHeaderRevealItem className="flex shrink-0">
             <NotificationButton />
+          </DashboardHeaderRevealItem>
+          <DashboardHeaderRevealItem className="flex shrink-0">
+            <MegaMenu />
           </DashboardHeaderRevealItem>
           <DashboardHeaderRevealItem className="flex shrink-0">
             {model.account !== null ? (

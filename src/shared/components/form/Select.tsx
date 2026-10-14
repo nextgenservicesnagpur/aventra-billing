@@ -242,15 +242,28 @@ export const Select = ({
 
   return (
     <div ref={containerRef} className="relative w-full">
-      {/* Hidden input preserves native form submission and FormData access */}
-      {name ? (
-        <input
-          type="hidden"
-          name={name}
-          value={currentValue}
-          disabled={disabled}
-        />
-      ) : null}
+      {/* Underlying select preserves form submission, FormData, and SSR option markup */}
+      <select
+        name={name}
+        value={currentValue}
+        onChange={(e) => {
+          setInternalValue(e.target.value);
+          onChange?.(e.target.value);
+        }}
+        tabIndex={-1}
+        aria-hidden="true"
+        className="sr-only pointer-events-none absolute h-0 w-0 opacity-0"
+        disabled={disabled}
+      >
+        {derivedPlaceholder ? (
+          <option value="">{derivedPlaceholder}</option>
+        ) : null}
+        {parsedOptions.map((opt) => (
+          <option key={opt.value} value={opt.value} disabled={opt.disabled}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
 
       {startIcon ? (
         <span

@@ -31,7 +31,7 @@ export const Textarea = ({
           ref={ref}
           {...props}
           className={cn(
-            "min-h-24 w-full resize-y rounded-lg border border-border bg-input pr-4 pl-10 pt-3 text-text-primary placeholder:text-text-muted transition-colors hover:border-text-muted focus:border-focus focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60",
+            "min-h-24 w-full resize-none rounded-lg border border-border bg-input pr-4 pl-10 pt-3 text-text-primary placeholder:text-text-muted transition-colors hover:border-text-muted focus:border-focus focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60",
             className,
           )}
         />
@@ -44,7 +44,7 @@ export const Textarea = ({
       ref={ref}
       {...props}
       className={cn(
-        "min-h-24 w-full resize-y rounded-lg border border-border bg-input px-4 py-3 text-text-primary placeholder:text-text-muted transition-colors hover:border-text-muted focus:border-focus focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60",
+        "min-h-24 w-full resize-none rounded-lg border border-border bg-input px-4 py-3 text-text-primary placeholder:text-text-muted transition-colors hover:border-text-muted focus:border-focus focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60",
         className,
       )}
     />

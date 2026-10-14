@@ -96,6 +96,11 @@ model Organization {
   address     OrganizationAddress?
   taxProfile  OrganizationTaxProfile?
   onboarding  OrganizationOnboarding?
+  customers       Customer[]
+  products        Product[]
+  billingSettings BillingSettings[]
+  invoices        Invoice[]
+  creditNotes     CreditNote[]
 
   @@unique([slug])
   @@map("organization")
@@ -202,4 +207,363 @@ model OrganizationOnboarding {
   updatedAt      DateTime           @updatedAt
 
   @@map("organization_onboarding")
+}
+
+enum CustomerType {
+  BUSINESS
+  INDIVIDUAL
+}
+
+enum GstTreatment {
+  REGISTERED_BUSINESS_REGULAR
+  CONSUMER_UNREGISTERED
+  OVERSEAS_EXPORT
+  SPECIAL_ECONOMIC_ZONE
+  DEEMED_EXPORT
+  COMPOSITION_SCHEME
+}
+
+enum CustomerStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Customer {
+  id                   String         @id
+  organizationId       String
+  organization         Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Identity
+  name                 String
+  customerType         CustomerType   @default(BUSINESS)
+  gstTreatment         GstTreatment   @default(REGISTERED_BUSINESS_REGULAR)
+  status               CustomerStatus @default(ACTIVE)
+
+  // Contact Information
+  contactPerson        String?
+  email                String?
+  phone                String?
+  alternatePhone       String?
+
+  // Billing Address
+  billingAddressLine1  String?
+  billingAddressLine2  String?
+  billingCity          String?
+  billingState         String?
+  billingPinCode       String?
+  billingCountry       String         @default("India")
+
+  // Shipping Address
+  sameAsBillingAddress Boolean        @default(true)
+  shippingAddressLine1 String?
+  shippingAddressLine2 String?
+  shippingCity         String?
+  shippingState        String?
+  shippingPinCode      String?
+  shippingCountry      String?        @default("India")
+
+  // Tax & Compliance
+  gstin                String?
+  pan                  String?
+  currency             String         @default("INR (₹)")
+  placeOfSupply        String         @default("27-Maharashtra")
+
+  // Additional Settings
+  paymentTerms         String         @default("Net 15 days")
+  creditLimit          Decimal?       @db.Decimal(14, 2)
+  defaultDiscount      Decimal?       @db.Decimal(5, 2)
+  defaultTaxPreference String         @default("18% (IGST)")
+  priceList            String         @default("Default Price List")
+
+  // Notes & Tags
+  internalNotes        String?
+  tags                 String[]       @default([])
+
+  // Timestamps
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+  invoices             Invoice[]
+  creditNotes          CreditNote[]
+
+  @@index([organizationId])
+  @@index([organizationId, name])
+  @@index([organizationId, email])
+  @@index([organizationId, status])
+  @@map("customer")
+}
+
+enum ProductType {
+  PRODUCT
+  SERVICE
+}
+
+enum ProductStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Product {
+  id             String        @id
+  organizationId String
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Basic Information
+  name           String
+  type           ProductType   @default(PRODUCT)
+  sku            String?
+  category       String?
+  status         ProductStatus @default(ACTIVE)
+  description    String?
+
+  // Pricing
+  sellingPrice   Decimal       @default(0) @db.Decimal(14, 2)
+  purchasePrice  Decimal?      @db.Decimal(14, 2)
+  currency       String        @default("INR (₹)")
+  unit           String        @default("PCS")
+
+  // Tax & Compliance
+  hsnSac         String?
+  taxRate        Decimal       @default(18) @db.Decimal(5, 2)
+  taxPreference  String        @default("Taxable")
+
+  // Inventory Settings (Products only)
+  trackInventory Boolean       @default(false)
+  reorderPoint   Decimal?      @db.Decimal(14, 2)
+
+  // Notes
+  internalNotes  String?
+
+  // Timestamps
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  invoiceItems    InvoiceItem[]
+  creditNoteItems CreditNoteItem[]
+
+  @@index([organizationId])
+  @@index([organizationId, type])
+  @@index([organizationId, status])
+  @@index([organizationId, name])
+  @@index([organizationId, sku])
+  @@map("product")
+}
+
+enum BillingDocumentType {
+  INVOICE
+  DEBIT_NOTE
+  CREDIT_NOTE
+  RECURRING_INVOICE
+}
+
+model BillingSettings {
+  id             String              @id
+  organizationId String
+  organization   Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  documentType   BillingDocumentType
+
+  // Numbering configuration
+  prefix         String              @default("INV-")
+  suffix         String?
+  nextNumber     Int                 @default(1)
+  padding        Int                 @default(4)
+
+  // Defaults
+  defaultNotes   String?
+  defaultTerms   String?
+
+  // Timestamps
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  @@unique([organizationId, documentType])
+  @@index([organizationId])
+  @@index([organizationId, documentType])
+  @@map("billing_settings")
+}
+
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  PARTIALLY_PAID
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+model Invoice {
+  id                      String        @id
+  organizationId          String
+  organization            Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  invoiceNumber           String
+
+  // Customer reference & snapshots
+  customerId              String?
+  customer                Customer?     @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  customerName            String
+  customerEmail           String?
+  customerAddress         String?
+  customerGstin           String?
+  customerPlaceOfSupply   String?
+
+  // Dates & Terms
+  issueDate               DateTime
+  dueDate                 DateTime
+  paymentTerms            String        @default("Net 15 days")
+  status                  InvoiceStatus @default(DRAFT)
+  taxMode                 String        @default("CGST_SGST")
+  currency                String        @default("INR (₹)")
+
+  // Monetary Totals (decimal-safe)
+  subtotal                Decimal       @db.Decimal(14, 2)
+  lineDiscountTotal       Decimal       @default(0) @db.Decimal(14, 2)
+  additionalDiscount      Decimal       @default(0) @db.Decimal(14, 2)
+  additionalDiscountType  String        @default("fixed")
+  additionalDiscountLabel String?
+  additionalCharges       Decimal       @default(0) @db.Decimal(14, 2)
+  additionalChargesLabel  String?
+  taxableAmount           Decimal       @db.Decimal(14, 2)
+  cgst                    Decimal       @default(0) @db.Decimal(14, 2)
+  sgst                    Decimal       @default(0) @db.Decimal(14, 2)
+  igst                    Decimal       @default(0) @db.Decimal(14, 2)
+  totalTax                Decimal       @default(0) @db.Decimal(14, 2)
+  total                   Decimal       @db.Decimal(14, 2)
+  amountPaid              Decimal       @default(0) @db.Decimal(14, 2)
+
+  // Notes & Terms
+  notes                   String?
+  terms                   String?
+
+  // Timestamps
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  // Line Items
+  items                   InvoiceItem[]
+  creditNotes             CreditNote[]
+
+  @@unique([organizationId, invoiceNumber])
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@index([organizationId, issueDate])
+  @@index([customerId])
+  @@map("invoice")
+}
+
+model InvoiceItem {
+  id            String   @id
+  invoiceId     String
+  invoice       Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  productId     String?
+  product       Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  item          String
+  description   String?
+  hsnSac        String?
+  quantity      Decimal  @db.Decimal(12, 3)
+  unitPrice     Decimal  @db.Decimal(14, 2)
+  discount      Decimal  @default(0) @db.Decimal(5, 2)
+  taxRate       Decimal  @default(18) @db.Decimal(5, 2)
+  taxableAmount Decimal  @db.Decimal(14, 2)
+  taxAmount     Decimal  @db.Decimal(14, 2)
+  lineTotal     Decimal  @db.Decimal(14, 2)
+  sortOrder     Int      @default(0)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([invoiceId])
+  @@index([productId])
+  @@map("invoice_item")
+}
+
+enum CreditNoteStatus {
+  DRAFT
+  ISSUED
+  CANCELLED
+}
+
+model CreditNote {
+  id                    String           @id
+  organizationId        String
+  organization          Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  creditNoteNumber      String
+
+  // Original Invoice reference
+  invoiceId             String
+  invoice               Invoice          @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
+
+  // Customer reference & snapshots
+  customerId            String?
+  customer              Customer?        @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  customerName          String
+  customerEmail         String?
+  customerAddress       String?
+  customerGstin         String?
+  customerPlaceOfSupply String?
+
+  // Dates & Reason
+  issueDate             DateTime
+  status                CreditNoteStatus @default(DRAFT)
+  reason                String
+  taxMode               String           @default("CGST_SGST")
+  currency              String           @default("INR (₹)")
+
+  // Monetary Totals (decimal-safe)
+  subtotal              Decimal          @db.Decimal(14, 2)
+  lineDiscountTotal     Decimal          @default(0) @db.Decimal(14, 2)
+  taxableAmount         Decimal          @db.Decimal(14, 2)
+  cgst                  Decimal          @default(0) @db.Decimal(14, 2)
+  sgst                  Decimal          @default(0) @db.Decimal(14, 2)
+  igst                  Decimal          @default(0) @db.Decimal(14, 2)
+  totalTax              Decimal          @default(0) @db.Decimal(14, 2)
+  total                 Decimal          @db.Decimal(14, 2)
+
+  // Notes & Terms
+  notes                 String?
+  terms                 String?
+
+  // Timestamps
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  // Line Items
+  items                 CreditNoteItem[]
+
+  @@unique([organizationId, creditNoteNumber])
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@index([organizationId, issueDate])
+  @@index([invoiceId])
+  @@index([customerId])
+  @@map("credit_note")
+}
+
+model CreditNoteItem {
+  id            String     @id
+  creditNoteId  String
+  creditNote    CreditNote @relation(fields: [creditNoteId], references: [id], onDelete: Cascade)
+
+  invoiceItemId String?
+  productId     String?
+  product       Product?   @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  item          String
+  description   String?
+  hsnSac        String?
+  quantity      Decimal    @db.Decimal(12, 3)
+  unitPrice     Decimal    @db.Decimal(14, 2)
+  discount      Decimal    @default(0) @db.Decimal(5, 2)
+  taxRate       Decimal    @default(18) @db.Decimal(5, 2)
+  taxableAmount Decimal    @db.Decimal(14, 2)
+  taxAmount     Decimal    @db.Decimal(14, 2)
+  lineTotal     Decimal    @db.Decimal(14, 2)
+  sortOrder     Int        @default(0)
+
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([creditNoteId])
+  @@index([productId])
+  @@index([invoiceItemId])
+  @@map("credit_note_item")
 }

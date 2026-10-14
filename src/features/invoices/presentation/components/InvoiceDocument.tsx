@@ -1,0 +1,20 @@
+import { calculateInvoiceTotals, formatCurrency, formatInvoiceDate, type Invoice } from "../../domain/invoice";
+
+export const InvoiceDocument = ({
+  invoice,
+  supplierName,
+}: {
+  invoice: Invoice;
+  supplierName?: string;
+}) => {
+  const totals = calculateInvoiceTotals(invoice);
+  return <article className="overflow-hidden rounded-2xl bg-doc-paper text-doc-ink shadow-xl" aria-label={`Invoice ${invoice.number} document`}>
+    <div className="bg-doc-header px-6 py-7 text-doc-header-text sm:px-10"><p className="text-sm font-semibold uppercase tracking-[0.2em] text-doc-faint">{supplierName || "Your business name"}</p><p className="mt-1 text-xs text-doc-faint">Generic invoice document preview</p><div className="mt-3 flex flex-wrap items-end justify-between gap-4"><h2 className="font-heading text-3xl font-bold">{invoice.number}</h2><p className="text-sm text-doc-faint">Issued {formatInvoiceDate(invoice.issueDate)}</p></div></div>
+    <div className="grid gap-6 px-6 py-7 sm:grid-cols-2 sm:px-10"><div><p className="text-xs font-semibold uppercase tracking-widest text-doc-muted">Billed to</p><p className="mt-2 font-semibold">{invoice.customer}</p><p className="text-sm text-doc-muted">{invoice.customerEmail}</p><p className="text-sm text-doc-muted">{invoice.customerAddress}</p><p className="text-sm text-doc-muted">GSTIN {invoice.customerGstin}</p>{invoice.customerPlaceOfSupply && <p className="text-sm text-doc-muted">Place of Supply: {invoice.customerPlaceOfSupply}</p>}</div><div className="sm:text-right"><p className="text-xs font-semibold uppercase tracking-widest text-doc-muted">Payment due</p><p className="mt-2 font-semibold">{formatInvoiceDate(invoice.dueDate)}</p><p className="text-sm text-doc-muted">{invoice.paymentTerms}</p></div></div>
+    <div className="overflow-x-auto px-6 sm:px-10"><table className="w-full min-w-[520px] text-sm"><thead><tr className="border-b border-doc-line text-left text-xs uppercase tracking-widest text-doc-muted"><th className="py-3">Item</th><th className="py-3 text-right">Qty</th><th className="py-3 text-right">Rate</th><th className="py-3 text-right">Amount</th></tr></thead><tbody>{invoice.items.map((line) => <tr key={line.id} className="border-b border-doc-line"><td className="py-4"><p className="font-semibold">{line.item}</p><p className="text-xs text-doc-muted">{line.description}</p></td><td className="py-4 text-right">{line.quantity}</td><td className="py-4 text-right">{formatCurrency(line.unitPrice)}</td><td className="py-4 text-right font-semibold">{formatCurrency(lineSubtotal(line))}</td></tr>)}</tbody></table></div>
+    <div className="ml-auto max-w-sm space-y-3 px-6 py-7 sm:px-10"><div className="flex justify-between text-sm text-doc-muted"><span>Subtotal</span><span>{formatCurrency(totals.subtotal)}</span></div><div className="flex justify-between text-sm text-doc-muted"><span>Discount</span><span>−{formatCurrency(totals.discount)}</span></div>{invoice.taxMode === "IGST" ? (<div className="flex justify-between text-sm text-doc-muted"><span>IGST</span><span>{formatCurrency(totals.igst)}</span></div>) : (<><div className="flex justify-between text-sm text-doc-muted"><span>CGST</span><span>{formatCurrency(totals.cgst)}</span></div><div className="flex justify-between text-sm text-doc-muted"><span>SGST</span><span>{formatCurrency(totals.sgst)}</span></div></>)}<div className="flex justify-between rounded-xl bg-doc-total-band px-4 py-4 text-lg font-bold"><span>Total</span><span>{formatCurrency(totals.total)}</span></div></div>
+    {(invoice.notes || invoice.terms) && <div className="grid gap-5 border-t border-doc-line bg-doc-card px-6 py-6 text-sm sm:grid-cols-2 sm:px-10"><div><p className="font-semibold">Notes</p><p className="mt-1 text-doc-muted">{invoice.notes || "—"}</p></div><div><p className="font-semibold">Terms</p><p className="mt-1 text-doc-muted">{invoice.terms || "—"}</p></div></div>}
+  </article>;
+};
+
+const lineSubtotal = (line: Invoice["items"][number]) => Math.round(line.quantity * line.unitPrice * 100) / 100;
